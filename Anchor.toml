@@ -1,14 +1,14 @@
 [features]
 seeds = false
 skip-lint = false
-[programs.localnet]
-crowdfunding_dapp = "Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS"
+[programs.devnet]
+crowdfunding_dapp = "DqGfiavJezxHcTPzDcvfhKraq4p9EfvEc6WgwycpnkWd"
 
 [registry]
 url = "https://api.apr.dev"
 
 [provider]
-cluster = "Localnet"
+cluster = "devnet"
 wallet = "/home/anoy/.config/solana/id.json"
 
 [scripts]
