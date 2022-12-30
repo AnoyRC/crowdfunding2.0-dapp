@@ -5,9 +5,16 @@ import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import {test} from './test'
 import LinearProgress from '@mui/material/LinearProgress';
+import TextField from '@mui/material/TextField';
+
+
 
 const App = () => {
   const [walletAddress, setWalletAddress] = useState(null)
+  const [name, setName] = useState('');
+  const [desc, setDesc] = useState('');
+  const [amount, setAmount] = useState(0);
+  const [toggle, setToggle] = useState(false);
 
   const checkIfWalletIsConnected = async() =>{
     try {
@@ -38,6 +45,21 @@ const App = () => {
     }
   }
 
+  const addCampaign = (event) => {
+    event.preventDefault();
+    const re = /^[0-9\b]+$/;
+    if(name.length > 0 && desc.length > 0 && amount.length > 0 && re.test(amount)){
+      console.log(name,desc,amount);
+      setName('');
+      setDesc('');
+      setAmount(0);
+    }
+  }
+
+  const toggleForm = () => {
+    setToggle(!toggle);
+  }
+
   const renderNotConnectedContainer = () => {
     return <Box sx={{marginX: '0', paddingLeft: '0'}}>
     <Box sx={{ bgcolor: '#1f2842', height: '100vh' , width: '100vw', display: 'flex',justifyContent:'center' , flexDirection: 'column'}}>
@@ -54,16 +76,53 @@ const App = () => {
   }
 
   const renderConnectedContainer = () => {
-    return <Box sx={{marginX: '0', paddingLeft: '0'}}>
-    <Box sx={{ bgcolor: '#1f2842', height: '100vh' , width: '100vw', display: 'flex', flexDirection: 'column'}}>
-      <Box sx={{ bgcolor: '#1f2839', height: '20vh' , width: '40vw' , alignSelf:'center', borderRadius:'1.2rem', display: 'flex',flexDirection: 'column',justifyContent:'center', marginY:'20px'}}>
+    return <Box sx={{marginX: '0', paddingLeft: '0',height:'100vh', bgcolor: '#1f2842'}}>
+    <Box sx={{ bgcolor: '#1f2842' , width: '100vw', display: 'flex', flexDirection: 'column'}}>
+      <Box sx={{ bgcolor: '#1f2839', height: '20vh' , width: '40vw' , alignSelf:'center', borderRadius:'1.2rem', display: 'flex',flexDirection: 'column',justifyContent:'center', marginTop:'20px'}}>
         <Typography variant="h3" gutterBottom sx={{color:'#ffefff', alignSelf:'center',fontWeight:'100'}}>
           Solana Crowdfunding
         </Typography>
-        <Button variant="outlined" sx={{width:'190px',height: '50px', alignSelf:'center', borderRadius:'0.75rem', marginTop:'10px'}}>
-          Add Campaign
+        <Button variant="outlined" sx={{width:'190px',height: '50px', alignSelf:'center', borderRadius:'0.75rem', marginTop:'10px'}} onClick={toggleForm}>
+          {(!toggle && 'Add Campaign') || 'X'}
         </Button>
       </Box>
+      {toggle &&
+      <Box component='form' onSubmit={addCampaign} noValidate sx={{ bgcolor: '#1f2839', height: '35vh' , width: '40vw' , alignSelf:'center', borderBottomLeftRadius:'1.2rem',borderBottomRightRadius:'1.2rem', display: 'flex',flexDirection: 'column',justifyContent:'center',marginTop:'-10px'}}>
+        <TextField value={name} onChange={(e)=>setName(e.target.value)} label="Campaign Name" id="outlined-size-normal" sx={{ width:'80%', alignSelf:'center',marginBottom:'20px',
+        input: { color: 'white' },
+        "& .MuiInputLabel-root": {color: 'white'},
+        "& .MuiOutlinedInput-root": { "& > fieldset": { borderColor: "white" }},
+        "& .MuiOutlinedInput-root.Mui-focused": {
+          "& > fieldset": {borderColor: "white"}
+        },
+        "& .MuiOutlinedInput-root:hover": {
+          "& > fieldset": { borderColor: "white"}
+        }}}  />
+        <TextField value={desc} onChange={(e)=>setDesc(e.target.value)} label="Description" id="outlined-size-normal" sx={{ width:'80%',alignSelf:'center',marginBottom:'20px',
+        input: { color: 'white' },
+        "& .MuiInputLabel-root": {color: 'white'},
+        "& .MuiOutlinedInput-root": { "& > fieldset": { borderColor: "white" }},
+        "& .MuiOutlinedInput-root.Mui-focused": {
+          "& > fieldset": {borderColor: "white"}
+        },
+        "& .MuiOutlinedInput-root:hover": {
+          "& > fieldset": { borderColor: "white"}
+        }}}  />
+        <TextField value={amount} onChange={(e)=>setAmount(e.target.value)} label="Amount" id="outlined-size-normal" sx={{ width:'80%',alignSelf:'center',marginBottom:'20px',
+        input: { color: 'white' },
+        "& .MuiInputLabel-root": {color: 'white'},
+        "& .MuiOutlinedInput-root": { "& > fieldset": { borderColor: "white" }},
+        "& .MuiOutlinedInput-root.Mui-focused": {
+          "& > fieldset": {borderColor: "white"}
+        },
+        "& .MuiOutlinedInput-root:hover": {
+          "& > fieldset": { borderColor: "white"}
+        }}}  />
+        <Button type='submit' variant="outlined" sx={{width:'190px',height: '50px', alignSelf:'center', borderRadius:'0.75rem', marginTop:'10px'}}>
+          Add
+        </Button>
+      </Box>
+      }
       {test.map((campaign,index)=>(
         <Post key={index}
           title={campaign.campaignName} 
