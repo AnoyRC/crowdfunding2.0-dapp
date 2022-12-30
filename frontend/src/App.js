@@ -185,6 +185,7 @@ const App = () => {
           admin= {campaign.admin.toString()}
           donated= {campaign.amountDonated.toString() / web3.LAMPORTS_PER_SOL}
           left= {campaign.amountLeft.toString() / web3.LAMPORTS_PER_SOL}
+          pubkey= {campaign.pubkey}
         />
       ))}
     </Box>
@@ -221,12 +222,66 @@ const App = () => {
         </Box>
         <Box sx={{height:'100%',width:'35%',display:'flex', alignContent:'center',justifyContent:'center'}}>
           <Box sx={{height:'90%', width:'90%',bgcolor:'#181f2b',alignSelf:'center',borderRadius:'0.65rem',display:'flex', flexDirection:'column', justifyContent:'center'}}>
-            <Button variant="outlined" sx={{marginY:'5%',width:'85%',alignSelf:'center',height:'35%',borderRadius:'0.65rem'}}>Withdraw</Button>
-            <Button variant="outlined" sx={{marginY:'5%',width:'85%',alignSelf:'center',height:'35%',borderRadius:'0.65rem'}}>Drop Campaign</Button>
+            <Button variant="outlined" sx={{marginY:'5%',width:'85%',alignSelf:'center',height:'30%',borderRadius:'0.65rem'}} onClick={()=>donate(props.pubkey)}>Donate</Button>
+            <Button variant="outlined" sx={{marginY:'5%',width:'85%',alignSelf:'center',height:'30%',borderRadius:'0.65rem'}} onClick={()=>withdraw(props.pubkey)}>Withdraw</Button>
+            <Button variant="outlined" sx={{marginY:'5%',width:'85%',alignSelf:'center',height:'30%',borderRadius:'0.65rem'}} onClick={()=>deleteCampaign(props.pubkey)}>Drop Campaign</Button>
           </Box>
         </Box>
       </Box>
     );
+  }
+
+  const donate = async(pubkey) => {
+    try {
+      const provider = getProvider();
+      const program = new Program(idl, programID, provider);
+      await program.rpc.donate(new BN(2*web3.LAMPORTS_PER_SOL),{
+        accounts:{
+          campaign: pubkey,
+          user: provider.wallet.publicKey,
+          systemProgram: SystemProgram.programId
+        }
+      })
+      console.log('Successfully donated the campaign')
+      getCampaign();
+    } catch (error) {
+      console.log('Error Donating', error)
+    }
+  }
+
+  const withdraw = async(pubkey) => {
+    try {
+      const provider = getProvider();
+      const program = new Program(idl, programID, provider);
+      await program.rpc.withdraw({
+        accounts:{
+          campaign: pubkey,
+          user: provider.wallet.publicKey,
+        }
+      })
+      console.log('Successfully withdrawn the campaign')
+      getCampaign();
+    } catch (error) {
+      console.log('Error Donating', error)
+    }
+  }
+
+  const deleteCampaign = async(pubkey) => {
+    try {
+      const provider = getProvider();
+      const program = new Program(idl, programID, provider);
+      await program.rpc.withdraw({
+        accounts:{
+          campaign: pubkey,
+          user: provider.wallet.publicKey,
+          systemProgram: SystemProgram.programId
+        }
+      })
+      console.log('Successfully withdrawn the campaign')
+      getCampaign();
+    } catch (error) {
+      console.log('Error Donating', error)
+    }
   }
 
   useEffect(()=>{
