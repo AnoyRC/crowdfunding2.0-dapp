@@ -53,6 +53,17 @@ pub mod crowdfunding_dapp {
         (&mut ctx.accounts.campaign).amount_left +=amount;
         Ok(())
     }
+
+    pub fn delete(ctx: Context<Delete>)->ProgramResult{
+        let campaign = &mut ctx.accounts.campaign;
+        let user = &mut ctx.accounts.user;
+        if campaign.admin != *user.key {
+            return Err(ProgramError::IncorrectProgramId);
+        }
+        **campaign.to_account_info().try_borrow_mut_lamports()? -= campaign.amount_left;
+        **user.to_account_info().try_borrow_mut_lamports()? += campaign.amount_left;
+        Ok(())
+    }
 }
 
 #[derive(Accounts)]
@@ -75,6 +86,15 @@ pub struct Withdraw<'info>{
 #[derive(Accounts)]
 pub struct Donate<'info>{
     #[account(mut)]
+    pub campaign: Account<'info,Campaign>,
+    #[account(mut)]
+    pub user: Signer<'info>,
+    pub system_program: Program<'info,System>
+}
+
+#[derive(Accounts)]
+pub struct Delete<'info>{
+    #[account(mut, seeds=[b"CAMPAIGN_DEMO".as_ref(), user.key().as_ref()], bump, close = user)]
     pub campaign: Account<'info,Campaign>,
     #[account(mut)]
     pub user: Signer<'info>,
