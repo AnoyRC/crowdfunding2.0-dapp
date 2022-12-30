@@ -3,11 +3,20 @@ import './App.css';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
-import {test} from './test'
 import LinearProgress from '@mui/material/LinearProgress';
 import TextField from '@mui/material/TextField';
+import { Connection, clusterApiUrl, PublicKey, SystemProgram, Keypair } from '@solana/web3.js';
+import {Program, AnchorProvider, web3, BN,utils} from '@project-serum/anchor';
+import {idl} from './idl.js'
+import { Buffer } from 'buffer';
+window.Buffer = Buffer;
 
+const programID = new PublicKey(idl.metadata.address);
+const network = clusterApiUrl('devnet');
 
+const opts = {
+  preFlightCommitment : 'processed'
+}
 
 const App = () => {
   const [walletAddress, setWalletAddress] = useState(null)
@@ -15,6 +24,7 @@ const App = () => {
   const [desc, setDesc] = useState('');
   const [amount, setAmount] = useState(0);
   const [toggle, setToggle] = useState(false);
+  const [campaigns, setCampaigns] = useState();
 
   const checkIfWalletIsConnected = async() =>{
     try {
@@ -45,14 +55,58 @@ const App = () => {
     }
   }
 
-  const addCampaign = (event) => {
+  const getProvider = () =>{
+    const connection = new Connection(network, opts.preFlightCommitment)
+    const provider = new AnchorProvider(connection, window.solana, opts.preFlightCommitment)
+    return provider;
+  }
+
+  const getCampaign = async() => {
+    const connection = new Connection(network, opts.preFlightCommitment);
+    const provider = getProvider();
+    const program = new Program(idl, programID, provider);
+    Promise.all(
+      (await connection.getProgramAccounts(programID)).map(async(campaign)=>  ({
+        ...(await program.account.campaign.fetch(campaign.pubkey)),
+        pubkey: campaign.pubkey
+      }))).then((campaign)=> {
+        setCampaigns(campaign)
+        console.log(campaign)
+      })
+  }
+
+  const addCampaign = async(event) => {
     event.preventDefault();
     const re = /^[0-9\b]+$/;
-    if(name.length > 0 && desc.length > 0 && amount.length > 0 && re.test(amount)){
-      console.log(name,desc,amount);
-      setName('');
-      setDesc('');
-      setAmount(0);
+    if(name.length > 0 && desc.length > 0 && amount.length > 0 && re.test(amount) && amount !== 0){
+      try {
+        const provider = getProvider();
+        const program = new Program(idl, programID, provider);
+        const [ campaign ] = await PublicKey.findProgramAddressSync(
+          [
+            utils.bytes.utf8.encode("CAMPAIGN_DEMO"),
+            provider.wallet.publicKey.toBuffer(),
+          ],
+          program.programId
+        )
+        await program.rpc.create(name,desc,new BN(amount*web3.LAMPORTS_PER_SOL),{
+          accounts:{
+            campaign,
+            user: provider.wallet.publicKey,
+            systemProgram: SystemProgram.programId
+          }
+        })
+        console.log('Successfully created a campaign')
+        console.log(name,desc,amount);
+        setName('');
+        setDesc('');
+        setAmount(0);
+      } catch (error) {
+        console.log('Error Creating Campaign',error)
+      }
+      
+    }else{
+      console.log('Enter a valid input !')
     }
   }
 
@@ -123,14 +177,14 @@ const App = () => {
         </Button>
       </Box>
       }
-      {test.map((campaign,index)=>(
+      {campaigns && campaigns.map((campaign,index)=>(
         <Post key={index}
-          title={campaign.campaignName} 
-          desc={campaign.campaignDescription}
-          max={campaign.maxAmount}
-          admin= {campaign.admin}
-          donated= {campaign.amountDonated}
-          left= {campaign.amountLeft}
+          title={campaign.name} 
+          desc={campaign.description}
+          max={campaign.maxAmount.toString() / web3.LAMPORTS_PER_SOL}
+          admin= {campaign.admin.toString()}
+          donated= {campaign.amountDonated.toString() / web3.LAMPORTS_PER_SOL}
+          left= {campaign.amountLeft.toString() / web3.LAMPORTS_PER_SOL}
         />
       ))}
     </Box>
@@ -179,6 +233,7 @@ const App = () => {
     const onLoad = async() => {
       await checkIfWalletIsConnected()
     }
+    getCampaign();
     window.addEventListener('load', onLoad);
     return () => window.removeEventListener('load', onLoad);
   },[])
