@@ -1,7 +1,7 @@
 use anchor_lang::prelude::*;
 use anchor_lang::solana_program::entrypoint::ProgramResult;
 
-declare_id!("DqGfiavJezxHcTPzDcvfhKraq4p9EfvEc6WgwycpnkWd");
+declare_id!("BxYR1cN5vUupgwnxcVyhvWK6CnYmipGUkCvjrEMttjVp");
 
 #[program]
 pub mod crowdfunding_dapp {
@@ -15,6 +15,7 @@ pub mod crowdfunding_dapp {
         campaign.max_amount = max_amount;
         campaign.admin = *ctx.accounts.user.key;
         campaign.amount_left = 0;
+        campaign.active = true;
         Ok(())
     }    
 
@@ -51,6 +52,9 @@ pub mod crowdfunding_dapp {
 
         (&mut ctx.accounts.campaign).amount_donated += amount;
         (&mut ctx.accounts.campaign).amount_left +=amount;
+        if (&mut ctx.accounts.campaign).amount_donated >= (&mut ctx.accounts.campaign).max_amount {
+            (&mut ctx.accounts.campaign).active = false;
+        }
         Ok(())
     }
 
@@ -62,6 +66,7 @@ pub mod crowdfunding_dapp {
         }
         **campaign.to_account_info().try_borrow_mut_lamports()? -= campaign.amount_left;
         **user.to_account_info().try_borrow_mut_lamports()? += campaign.amount_left;
+        campaign.active = false;
         Ok(())
     }
 }
@@ -108,7 +113,8 @@ pub struct Campaign{
     pub description: String,
     pub amount_donated: u64,
     pub max_amount: u64,
-    pub amount_left: u64
+    pub amount_left: u64,
+    pub active: bool
 }
 
 

@@ -129,12 +129,16 @@ export const idl = {
             {
               "name": "amountLeft",
               "type": "u64"
+            },
+            {
+              "name": "active",
+              "type": "bool"
             }
           ]
         }
       }
     ],
     "metadata": {
-      "address": "DqGfiavJezxHcTPzDcvfhKraq4p9EfvEc6WgwycpnkWd"
+      "address": "BxYR1cN5vUupgwnxcVyhvWK6CnYmipGUkCvjrEMttjVp"
     }
-  }
+}

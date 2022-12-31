@@ -2,7 +2,7 @@
 seeds = false
 skip-lint = false
 [programs.devnet]
-crowdfunding_dapp = "DqGfiavJezxHcTPzDcvfhKraq4p9EfvEc6WgwycpnkWd"
+crowdfunding_dapp = "BxYR1cN5vUupgwnxcVyhvWK6CnYmipGUkCvjrEMttjVp"
 
 [registry]
 url = "https://api.apr.dev"

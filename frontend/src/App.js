@@ -98,6 +98,7 @@ const App = () => {
         })
         console.log('Successfully created a campaign')
         console.log(name,desc,amount);
+        getCampaign()
         setName('');
         setDesc('');
         setAmount(0);
@@ -186,6 +187,7 @@ const App = () => {
           donated= {campaign.amountDonated.toString() / web3.LAMPORTS_PER_SOL}
           left= {campaign.amountLeft.toString() / web3.LAMPORTS_PER_SOL}
           pubkey= {campaign.pubkey}
+          active = {campaign.active}
         />
       ))}
     </Box>
@@ -194,7 +196,7 @@ const App = () => {
 
   const Post = (props) => {
     return(
-      <Box sx={{ bgcolor: '#1f2839', height: '30vh' , width: '40vw' , alignSelf:'center', borderRadius:'1.2rem', display: 'flex', marginY:'20px'}}>
+      <Box sx={{ bgcolor:props.active ? '#1f2839' : '#2d3f59', height: '30vh' , width: '40vw' , alignSelf:'center', borderRadius:'1.2rem', display: 'flex', marginY:'20px'}}>
         <Box sx={{height:'100%',display:'flex', flexDirection:'column',width:'65%'}}>
           <Typography variant="h3" gutterBottom sx={{color:'#ffefff',fontWeight:'100', marginTop:'20px', marginLeft:'20px',marginBottom:'0px'}}>
             {props.title}
@@ -217,14 +219,20 @@ const App = () => {
               </Box>
             </Box>
           <Box sx={{display:'flex', height:'50%',width:'100%'}}>
-            <LinearProgressWithLabel value={props.donated/props.max * 100} sx={{marginLeft: '20px'}}/>
+            <LinearProgressWithLabel value={props.donated/props.max >= 1 ? 100 : props.donated/props.max * 100} sx={{marginLeft: '20px'}}/>
           </Box>
         </Box>
         <Box sx={{height:'100%',width:'35%',display:'flex', alignContent:'center',justifyContent:'center'}}>
           <Box sx={{height:'90%', width:'90%',bgcolor:'#181f2b',alignSelf:'center',borderRadius:'0.65rem',display:'flex', flexDirection:'column', justifyContent:'center'}}>
-            <Button variant="outlined" sx={{marginY:'5%',width:'85%',alignSelf:'center',height:'30%',borderRadius:'0.65rem'}} onClick={()=>donate(props.pubkey)}>Donate</Button>
-            <Button variant="outlined" sx={{marginY:'5%',width:'85%',alignSelf:'center',height:'30%',borderRadius:'0.65rem'}} onClick={()=>withdraw(props.pubkey)}>Withdraw</Button>
-            <Button variant="outlined" sx={{marginY:'5%',width:'85%',alignSelf:'center',height:'30%',borderRadius:'0.65rem'}} onClick={()=>deleteCampaign(props.pubkey)}>Drop Campaign</Button>
+            {(props.donated < props.max &&
+              <Button variant="outlined" sx={{marginY:'5%',width:'85%',alignSelf:'center',height:'30%',borderRadius:'0.65rem'}} onClick={()=>donate(props.pubkey)}>Donate</Button>) ||
+              <Button variant="outlined" sx={{marginY:'5%',width:'85%',alignSelf:'center',height:'30%',borderRadius:'0.65rem',bgcolor:'#aba8a7'}} disabled>Donate</Button>}
+            {(props.left > 0 &&
+              <Button variant="outlined" sx={{marginY:'5%',width:'85%',alignSelf:'center',height:'30%',borderRadius:'0.65rem'}} onClick={()=>withdraw(props.pubkey)}>Withdraw</Button>) ||
+              <Button variant="outlined" sx={{marginY:'5%',width:'85%',alignSelf:'center',height:'30%',borderRadius:'0.65rem',bgcolor:'#aba8a7'}} disabled>Withdraw</Button>}
+            {(props.active && 
+              <Button variant="outlined" sx={{marginY:'5%',width:'85%',alignSelf:'center',height:'30%',borderRadius:'0.65rem'}} onClick={()=>deleteCampaign(props.pubkey)}>Drop Campaign</Button>) ||
+              <Button variant="outlined" sx={{marginY:'5%',width:'85%',alignSelf:'center',height:'30%',borderRadius:'0.65rem',bgcolor:'#aba8a7'}} disabled>Drop Campaign</Button>}
           </Box>
         </Box>
       </Box>
@@ -277,7 +285,7 @@ const App = () => {
           systemProgram: SystemProgram.programId
         }
       })
-      console.log('Successfully withdrawn the campaign')
+      console.log('Successfully dropped the campaign')
       getCampaign();
     } catch (error) {
       console.log('Error Donating', error)
